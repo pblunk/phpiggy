@@ -16,7 +16,15 @@ class HomeController
 
     public function home()
     {
-        $transactions = $this->transactionService->getUserTransactions();
+        $page = $_GET['p'] ?? 1;
+        $page = (int) $page;
+        $length = 3;
+        $offset = ($page - 1) * $length;
+
+        $transactions = $this->transactionService->getUserTransactions(
+            $length,
+            $offset
+        );
 
         echo $this->view->render("/index.php", [
             'transactions' => $transactions

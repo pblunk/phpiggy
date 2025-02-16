@@ -26,12 +26,19 @@ class TransactionService
         );
     }
 
-    public function getUserTransactions()
+    public function getUserTransactions(int $length, int $offset)
     {
+        $searchTerm = addcslashes($_GET['s'] ?? '', '%_');
+
         $transactions = $this->db->query(
             "SELECT *, DATE_FORMAT(date, '%Y-%m-%d') as formatted_date
-            FROM transactions WHERE user_id = :user_id",
-            ['user_id' => $_SESSION['user']]
+            FROM transactions WHERE user_id = :user_id
+            AND description LIKE :description
+            LIMIT {$length} OFFSET {$offset}",
+            [
+                'user_id' => $_SESSION['user'],
+                'description' => "%{$searchTerm}%"
+            ]
         )->findAll();
 
         return $transactions;
