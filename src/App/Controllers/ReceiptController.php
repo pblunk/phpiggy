@@ -38,6 +38,8 @@ class ReceiptController
 
         $this->receiptService->validateFile($receiptFile);
 
+        $this->receiptService->upload($receiptFile);
+
         redirectTo("/");
     }
 }
