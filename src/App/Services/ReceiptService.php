@@ -53,6 +53,9 @@ class ReceiptService
 
         $uploadPath = Paths::STORAGE_UPLOADS . "/" . $newFilename;
 
+        //error message
+        error_log("Upload path: " . $uploadPath);
+
         if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
             throw new ValidationException([
                 'receipt' => ['Failed to upload file']
@@ -73,6 +76,42 @@ class ReceiptService
                 'storage_filename' => $newFilename,
                 'media_type' => $file['type']
             ]
+        );
+    }
+
+    public function getReceipt(string $id)
+    {
+        $receipt = $this->db->query(
+            "SELECT * FROM receipts WHERE id = :id",
+            ['id' => $id]
+        )->find();
+
+        return $receipt;
+    }
+
+    public function read(array $receipt)
+    {
+        $filePath = Paths::STORAGE_UPLOADS . '/' . $receipt['storage_filename'];
+
+        if (!file_exists($filePath)) {
+            redirectTo("/");
+        }
+
+        header("Content-Disposition: inline;filename={$receipt['original_filename']}");
+        header("Content-Type: {$receipt['media_type']}");
+
+        readfile($filePath);
+    }
+
+    public function delete(array $receipt)
+    {
+        $filePath = Paths::STORAGE_UPLOADS . '/' . $receipt['storage_filename'];
+
+        unlink($filePath);
+
+        $this->db->query(
+            "DELETE FROM receipts WHERE id = :id",
+            ['id' => $receipt['id']]
         );
     }
 }
